@@ -14,7 +14,7 @@ color = (255, 0 , 255)
 
 leftEyeIdList = [22, 23, 24, 26, 110, 157, 158, 159, 160, 161, 130, 243]
 # Right eye landmark indices (MediaPipe Face Mesh)
-rightEyeIdList = [ 252, 253, 254, 255,  256, 335, 339,  384 ,385, 386, 387, 388 ,446, 463]
+rightEyeIdList = [ 252, 253, 254, 255,  256, 339,  384 ,385, 386, 387, 388 ,446, 463]
 
 
 while True:

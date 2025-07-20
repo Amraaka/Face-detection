@@ -3,8 +3,9 @@ import cvzone
 from cvzone.FaceMeshModule import FaceMeshDetector
 from cvzone.PlotModule import LivePlot
 
-# cap = cv2.VideoCapture('/Users/amara/SideProjects/Research/Eye_Blink_Detection/Blinking_Video.mp4')
-cap = cv2.VideoCapture(2)
+cap = cv2.VideoCapture('/Users/amara/SideProjects/Research/Eye_Blink_Detection/Blinking_Video.mp4')
+# cap = cv2.VideoCapture(2)
+# cap = cv2.
 detector = FaceMeshDetector(maxFaces=2)
 plotY = LivePlot(400, 600, [25, 40])  
 ratioList=[]
@@ -12,7 +13,7 @@ blinkCounter = 0
 counter = 0 
 color = (255, 0 , 255)
 
-leftEyeIdList = [22, 23, 24, 26, 110, 157, 158, 159, 160, 161, 130, 243]
+leftEyeIdList = [22, 23, 24, 25, 26, 110, 157, 158, 159, 160, 161, 130, 243]
 # Right eye landmark indices (MediaPipe Face Mesh)
 rightEyeIdList = [ 252, 253, 254, 255,  256, 339,  384 ,385, 386, 387, 388 ,446, 463]
 
@@ -26,14 +27,33 @@ while True:
 
     if faces:
         face = faces[0]
-        for id in leftEyeIdList:
-            cv2.circle(img, face[id], 5, color, cv2.FILLED)
-        for id in rightEyeIdList:
-            cv2.circle(img, face[id], 5, color, cv2.FILLED)
+        # for id in leftEyeIdList:
+        #     cv2.circle(img, face[id], 5, color, cv2.FILLED)
+        # for id in rightEyeIdList:
+        #     cv2.circle(img, face[id], 5, color, cv2.FILLED)
+
         # for idx, point in enumerate(face):
         #     cv2.circle(img, point, 2, (255, 255, 255), -1)
         #     cv2.putText(img, str(idx), point, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0,255,0), 1)
 
+        #left eye EAR points 
+        cv2.circle(img, face[130], 5,(0, 0 , 255), cv2.FILLED) # left P1
+        cv2.circle(img, face[160], 5,(0, 0 , 255), cv2.FILLED) # left P2
+        cv2.circle(img, face[158], 5,(0, 0 , 255), cv2.FILLED) # left P3
+        cv2.circle(img, face[243], 5,(0, 0 , 255), cv2.FILLED) # left P4
+        cv2.circle(img, face[22], 5,(0, 0 , 255), cv2.FILLED) # left P5
+        cv2.circle(img, face[24], 5,(0, 0 , 255), cv2.FILLED) # left P6 
+
+        #right eye EAR points
+        cv2.circle(img, face[463], 5,(0, 0 , 255), cv2.FILLED) # left P1
+        cv2.circle(img, face[446], 5,(0, 0 , 255), cv2.FILLED) # left P2
+        cv2.circle(img, face[385], 5,(0, 0 , 255), cv2.FILLED) # left P3
+        cv2.circle(img, face[387], 5,(0, 0 , 255), cv2.FILLED) # left P4
+        cv2.circle(img, face[254], 5,(0, 0 , 255), cv2.FILLED) # left P5
+        cv2.circle(img, face[252], 5,(0, 0 , 255), cv2.FILLED) # left P6 
+
+        # cv2.circle(img, face[446], 5,(0, 0 , 255), cv2.FILLED)
+        
         leftUp = face[159]
         leftDown = face[23]
         leftLeft = face[130]

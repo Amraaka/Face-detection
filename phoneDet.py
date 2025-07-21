@@ -5,9 +5,15 @@ from cvzone.PlotModule import LivePlot
 from ultralytics import YOLO
 import numpy as np
 import time
+import pygame  # Import pygame for audio
 
-# Initialize webcam
-cap = cv2.VideoCapture(2)
+# Initialize pygame mixer for audio
+pygame.mixer.init()
+# Load your warning sound (replace with your own sound file path)
+warning_sound = pygame.mixer.Sound('warning.mp3')  # You can use any .wav file
+
+# Initialize webcam         
+cap = cv2.VideoCapture(1)
 
 # Initialize FaceMesh
 detector = FaceMeshDetector(maxFaces=1)
@@ -24,10 +30,15 @@ color = (255, 0, 255)
 # For distraction detection
 head_turned = False
 turned_start_time = 0
+last_warning_time = 0  # To prevent audio spamming
 
 # Eye landmark indices
 leftEyeIdList = [22, 23, 24, 25, 26, 110, 157, 158, 159, 160, 161, 130, 243]
 rightEyeIdList = [252, 253, 254, 255, 256, 339, 384, 385, 386, 387, 388, 446, 463]
+
+# Variables to track eye closure timing
+eye_closed_start_time = None
+eye_closed_warning_given = False
 
 # Loop
 while True:
@@ -35,6 +46,8 @@ while True:
     if not success:
         break
 
+    current_time = time.time()
+    
     # --- YOLO Object Detection ---
     results = model(img, stream=True, verbose=False)
 
@@ -55,6 +68,10 @@ while True:
     if phone_detected:
         cv2.putText(img, 'WARNING: PHONE DETECTED!', (50, 300),
                     cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 3)
+        # Play warning sound if not already playing and if it's been at least 3 seconds since last warning
+        if current_time - last_warning_time > 3:
+            warning_sound.play()
+            last_warning_time = current_time
 
     # --- FaceMesh ---
     img, faces = detector.findFaceMesh(img, draw=False)
@@ -74,6 +91,29 @@ while True:
 
         ratio = int((lengthVer / lengthHor) * 100)
         ratioList.append(ratio)
+        if len(ratioList) > 3:
+            ratioList.pop(0)
+        ratioAvg = sum(ratioList) / len(ratioList)
+
+        if ratioAvg < 31:
+            if counter == 0:
+                blinkCounter += 1
+                color = (0, 200, 0)
+                counter = 1
+            # Start timing eye closure
+            if eye_closed_start_time is None:
+                eye_closed_start_time = current_time
+                eye_closed_warning_given = False
+            # If eyes closed for over 3 seconds, play warning
+            elif not eye_closed_warning_given and current_time - eye_closed_start_time > 2:
+                cv2.putText(img, 'WARNING: EYES CLOSED!', (50, 350),
+                            cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 3)
+                warning_sound.play()
+                eye_closed_warning_given = True
+        else:
+            eye_closed_start_time = None
+            eye_closed_warning_given = False
+
         if len(ratioList) > 3:
             ratioList.pop(0)
         ratioAvg = sum(ratioList) / len(ratioList)
@@ -139,9 +179,13 @@ while True:
                 turned_start_time = time.time()
                 head_turned = True
 
-            if time.time() - turned_start_time > 5:
+            if time.time() - turned_start_time > 3:
                 cv2.putText(img, 'WARNING: LOOKING AWAY!', (50, 250),
                             cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 3)
+                # Play warning sound if not already playing and if it's been at least 3 seconds since last warning
+                if current_time - last_warning_time > 3:
+                    warning_sound.play()
+                    last_warning_time = current_time
         else:
             head_turned = False
 

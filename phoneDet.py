@@ -5,22 +5,24 @@ from cvzone.PlotModule import LivePlot
 from ultralytics import YOLO
 import numpy as np
 import time
-import pygame  # Import pygame for audio
+import pygame  #   for audio
 
 # Initialize pygame mixer for audio
 pygame.mixer.init()
-# Load your warning sound (replace with your own sound file path)
-warning_sound = pygame.mixer.Sound('warning.mp3')  # You can use any .wav file
 
-# Initialize webcam         
-cap = cv2.VideoCapture(1)
+# warning sound
+warning_sound = pygame.mixer.Sound('warning.mp3')  
 
-# Initialize FaceMesh
+# webcam         
+cap = cv2.VideoCapture(2)
+# cap = cv2.VideoCapture('/Users/amara/SideProjects/Research/Eye_Blink_Detection/Blinking_Video.mp4')
+
+# FaceMesh
 detector = FaceMeshDetector(maxFaces=1)
 plotY = LivePlot(400, 600, [25, 40])
 
 # Load YOLOv8 model
-model = YOLO("yolov8n.pt")  # You can use yolov8s.pt or yolov8m.pt for better accuracy
+model = YOLO("yolov8n.pt")  
 
 ratioList = []
 blinkCounter = 0
@@ -40,12 +42,11 @@ rightEyeIdList = [252, 253, 254, 255, 256, 339, 384, 385, 386, 387, 388, 446, 46
 eye_closed_start_time = None
 eye_closed_warning_given = False
 
-# Loop
 while True:
     success, img = cap.read()
     if not success:
         break
-
+        
     current_time = time.time()
     
     # --- YOLO Object Detection ---
@@ -182,7 +183,6 @@ while True:
             if time.time() - turned_start_time > 3:
                 cv2.putText(img, 'WARNING: LOOKING AWAY!', (50, 250),
                             cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 3)
-                # Play warning sound if not already playing and if it's been at least 3 seconds since last warning
                 if current_time - last_warning_time > 3:
                     warning_sound.play()
                     last_warning_time = current_time

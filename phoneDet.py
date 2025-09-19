@@ -5,24 +5,19 @@ from cvzone.PlotModule import LivePlot
 from ultralytics import YOLO
 import numpy as np
 import time
-import pygame  #   for audio
+import pygame  
 
-# Initialize pygame mixer for audiow
 pygame.mixer.init()
 
-# warning sound
 warning_sound = pygame.mixer.Sound('warning.mp3')  
 
-# webcam         
-cap = cv2.VideoCapture("https://172.20.10:8080/video")
-# cap = cv2.VideoCapture(1)
+# cap = cv2.VideoCapture("https://172.20.10:8080/video")
+cap = cv2.VideoCapture(1)
 # cap = cv2.VideoCapture('/Users/amara/SideProjects/Research/Eye_Blink_Detection/Blinking_Video.mp4')
 
-# FaceMesh
 detector = FaceMeshDetector(maxFaces=1)
 plotY = LivePlot(400, 600, [25, 40])
 
-# Load YOLOv8 model
 model = YOLO("yolov8n.pt")  
 
 ratioList = []
@@ -30,16 +25,13 @@ blinkCounter = 0
 counter = 0
 color = (255, 0, 255)
 
-# For distraction detection
 head_turned = False
 turned_start_time = 0
 last_warning_time = 0  # To prevent audio spamming
 
-# Eye landmark indices
 leftEyeIdList = [22, 23, 24, 25, 26, 110, 157, 158, 159, 160, 161, 130, 243]
 rightEyeIdList = [252, 253, 254, 255, 256, 339, 384, 385, 386, 387, 388, 446, 463]
 
-# Variables to track eye closure timing
 eye_closed_start_time = None
 eye_closed_warning_given = False
 
@@ -50,7 +42,6 @@ while True:
         
     current_time = time.time()
     
-    # --- YOLO Object Detection ---
     results = model(img, stream=True, verbose=False)
 
     phone_detected = False
@@ -70,18 +61,15 @@ while True:
     if phone_detected:
         cv2.putText(img, 'WARNING: PHONE DETECTED!', (50, 300),
                     cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 3)
-        # Play warning sound if not already playing and if it's been at least 3 seconds since last warning
         if current_time - last_warning_time > 3:
             warning_sound.play()
             last_warning_time = current_time
 
-    # --- FaceMesh ---
     img, faces = detector.findFaceMesh(img, draw=False)
 
     if faces:
         face = faces[0]
 
-        # --- EAR calculation ---
         leftUp = face[159]
         leftDown = face[23]
         leftLeft = face[130]
@@ -102,11 +90,9 @@ while True:
                 blinkCounter += 1
                 color = (0, 200, 0)
                 counter = 1
-            # Start timing eye closure
             if eye_closed_start_time is None:
                 eye_closed_start_time = current_time
                 eye_closed_warning_given = False
-            # If eyes closed for over 3 seconds, play warning
             elif not eye_closed_warning_given and current_time - eye_closed_start_time > 2:
                 cv2.putText(img, 'WARNING: EYES CLOSED!', (50, 350),
                             cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 3)
@@ -132,7 +118,6 @@ while True:
 
         cvzone.putTextRect(img, f'Blink Count: {blinkCounter}', (50, 100), scale=2, thickness=2, colorR=color)
 
-        # --- Head Pose ---
         image_points = np.array([
             face[1],    # Nose tip
             face[152],  # Chin

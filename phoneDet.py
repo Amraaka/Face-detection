@@ -7,14 +7,15 @@ import numpy as np
 import time
 import pygame  #   for audio
 
-# Initialize pygame mixer for audio
+# Initialize pygame mixer for audiow
 pygame.mixer.init()
 
 # warning sound
 warning_sound = pygame.mixer.Sound('warning.mp3')  
 
 # webcam         
-cap = cv2.VideoCapture(2)
+cap = cv2.VideoCapture("https://172.20.10:8080/video")
+# cap = cv2.VideoCapture(1)
 # cap = cv2.VideoCapture('/Users/amara/SideProjects/Research/Eye_Blink_Detection/Blinking_Video.mp4')
 
 # FaceMesh

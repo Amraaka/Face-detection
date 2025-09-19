@@ -7,7 +7,7 @@ import time
 
 # Initialize
 # cap = cv2.VideoCapture('/Users/amara/SideProjects/Research/Eye_Blink_Detection/Blinking_Video.mp4')
-cap = cv2.VideoCapture(2)
+cap = cv2.VideoCapture(1)
 detector = FaceMeshDetector(maxFaces=1)
 plotY = LivePlot(400, 600, [25, 40])
 

@@ -7,4 +7,5 @@ cvzone
 mediapipe
 ultralytics
 pygame
+requests
     

@@ -39,8 +39,11 @@ class EyeAnalyzer:
             self.ratioList.pop(0)
         ratioAvg = sum(self.ratioList) / len(self.ratioList)
 
+        # Determine if eyes are closed
+        eyes_closed = ratioAvg < self.BLINK_RATIO_THRESH
+
         # Blink/closed detection
-        if ratioAvg < self.BLINK_RATIO_THRESH:
+        if eyes_closed:
             if self.counter == 0:
                 self.blinkCounter += 1
                 self.color = (0, 200, 0)
@@ -67,4 +70,4 @@ class EyeAnalyzer:
                 self.color = (255, 0, 255)
 
         cvzone.putTextRect(img, f"Blink Count: {self.blinkCounter}", (50, 100), scale=2, thickness=2, colorR=self.color)
-        return ratioAvg, self.color
+        return ratioAvg, self.color, eyes_closed

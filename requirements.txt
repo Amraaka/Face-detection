@@ -8,4 +8,6 @@ mediapipe
 ultralytics
 pygame
 requests
+pymongo
+python-dotenv
     

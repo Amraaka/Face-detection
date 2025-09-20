@@ -3,6 +3,16 @@ import cvzone
 import time
 import argparse
 import os
+from pathlib import Path
+from typing import Optional
+
+# Load environment variables from .env file in Monitor package
+try:
+    from dotenv import load_dotenv
+    env_path = Path(__file__).parent / '.env'
+    load_dotenv(env_path)
+except ImportError:
+    print("[info] python-dotenv not installed. Using system env vars only.")
 
 from .alerts import AlertPlayer
 from .phone_detection import PhoneDetector
@@ -10,7 +20,10 @@ from .face_mesh import FaceMeshService
 from .eye_analysis import EyeAnalyzer
 from .head_pose import HeadPoseEstimator
 from .view_stack import ViewStacker
+from .mouth_analysis import MouthAnalyzer
 from . import camera_utils
+from .stats import StatsAggregator
+from .stats_store import StatsDB
 
 # Defensive fallbacks if attributes are not exposed on some Python setups
 def _fallback_open_capture(source):
@@ -41,7 +54,9 @@ def _fallback_list_cameras(max_index: int = 8):
     return found
 
 class DriverMonitor:
-    def __init__(self, cam_index=0, yolo_model_path="yolov8n.pt", warning_sound_path="warning.mp3", url=None):
+    def __init__(self, cam_index=0, yolo_model_path="yolov8n.pt", warning_sound_path="warning.mp3", url=None,
+                 stats_interval: float = 5.0, mongo_uri: Optional[str] = None, mongo_db: str = "driver_monitor",
+                 mongo_coll: str = "stats"):
         # Open local cam or network stream
         # Use camera_utils if available, otherwise fallback
         if hasattr(camera_utils, "open_capture"):
@@ -54,7 +69,17 @@ class DriverMonitor:
         self.face_mesh = FaceMeshService(max_faces=1)
         self.eyes = EyeAnalyzer(blink_ratio_thresh=31, eye_closed_seconds=2)
         self.head = HeadPoseEstimator(yaw_threshold=20, pitch_threshold=20, hold_seconds=3)
+        self.mouth = MouthAnalyzer()
         self.view = ViewStacker(width=400, height=600, y_range=(25, 40))
+        # Stats aggregation and optional DB
+        self.stats = StatsAggregator(interval_seconds=stats_interval)
+        self.stats_db = None
+        if mongo_uri:
+            try:
+                self.stats_db = StatsDB(mongo_uri, db_name=mongo_db, coll_name=mongo_coll)
+                print("[info] Connected to MongoDB Atlas")
+            except Exception as e:
+                print(f"[warn] Mongo connection failed: {e}. Proceeding without DB.")
 
     def run(self):
         while True:
@@ -67,17 +92,33 @@ class DriverMonitor:
 
             now = time.time()
 
-            if self.phone.detect(img):
+            phone_detected = self.phone.detect(img)
+            if phone_detected:
                 self.alerts.play(now)
 
             img, faces = self.face_mesh.find_face(img)
             if faces:
                 face = faces[0]
-                ratioAvg, color = self.eyes.analyze(img, face, now, on_warning=self.alerts.play)
-                self.head.check(img, face, now, on_warning=self.alerts.play)
+                ratioAvg, color, eyes_closed = self.eyes.analyze(img, face, now, on_warning=self.alerts.play)
+                yaw, pitch = self.head.check(img, face, now, on_warning=self.alerts.play)
+                mouth_ratio = self.mouth.analyze_mouth(face)
+                
+                # update stats with all behavioral data
+                self.stats.update(now, yaw=yaw, pitch=pitch, phone_detected=phone_detected,
+                                  blink_total=self.eyes.blinkCounter, eyes_closed=eyes_closed,
+                                  mouth_open_ratio=mouth_ratio)
                 imgStack = self.view.stack(img, ratioAvg, color)
             else:
+                # update stats with available signals
+                self.stats.update(now, yaw=None, pitch=None, phone_detected=phone_detected,
+                                  blink_total=self.eyes.blinkCounter, eyes_closed=False,
+                                  mouth_open_ratio=None)
                 imgStack = cvzone.stackImages([img, img], 2, 1)
+
+            # Flush to DB every interval
+            if self.stats_db and self.stats.ready(now):
+                doc = self.stats.flush(now)
+                self.stats_db.insert(doc)
 
             cv2.imshow("Driver Monitoring", imgStack)
             if cv2.waitKey(1) & 0xFF == ord("q"):
@@ -93,6 +134,10 @@ if __name__ == "__main__":
     parser.add_argument("--list-cams", action="store_true", help="List available camera indices and exit")
     parser.add_argument("--yolo", default="yolov8n.pt")
     parser.add_argument("--sound", default="warning.mp3")
+    parser.add_argument("--mongo-uri", type=str, default=os.getenv("MONGODB_URI"), help="MongoDB Atlas connection string")
+    parser.add_argument("--mongo-db", type=str, default=os.getenv("MONGODB_DB", "driver_monitor"))
+    parser.add_argument("--mongo-coll", type=str, default=os.getenv("MONGODB_COLL", "stats"))
+    parser.add_argument("--stats-interval", type=float, default=float(os.getenv("STATS_INTERVAL", "5")), help="seconds")
     args = parser.parse_args()
 
     if args.list_cams:
@@ -113,6 +158,10 @@ if __name__ == "__main__":
         yolo_model_path=args.yolo,
         warning_sound_path=args.sound,
         url=args.url,
+        stats_interval=args.stats_interval,
+        mongo_uri=args.mongo_uri,
+        mongo_db=args.mongo_db,
+        mongo_coll=args.mongo_coll,
     )
     app.run()
 

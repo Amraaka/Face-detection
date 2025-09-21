@@ -5,6 +5,7 @@ import argparse
 import os
 from pathlib import Path
 from typing import Optional
+import uuid
 
 try:
     from dotenv import load_dotenv
@@ -22,7 +23,7 @@ from .view_stack import ViewStacker
 from .mouth_analysis import MouthAnalyzer
 from . import camera_utils
 from .stats import StatsAggregator
-from .stats_store import StatsDB, TimeSeriesStore
+from .stats_store import StatsDB
 
 def _fallback_open_capture(source):
     if isinstance(source, str):
@@ -53,14 +54,32 @@ def _fallback_list_cameras(max_index: int = 8):
 class DriverMonitor:
     def __init__(self, cam_index=0, yolo_model_path="yolov8n.pt", warning_sound_path="warning.mp3", url=None,
                  stats_interval: float = 5.0, mongo_uri: Optional[str] = None, mongo_db: str = "driver_monitor",
-                 mongo_coll: str = "stats", timeseries: bool = True, session_tz: Optional[str] = None,
-                 sessions_coll: str = "sessions", windows_coll: str = "windows_5s"):
+                 mongo_coll: str = "stats"):
         # Open local cam or network stream
         # Use camera_utils if available, otherwise fallback
         if hasattr(camera_utils, "open_capture"):
             self.cap = camera_utils.open_capture(url if url else cam_index)
         else:
             self.cap = _fallback_open_capture(url if url else cam_index)
+
+        # If camera failed to open (e.g., index out of bounds on macOS), try a graceful fallback
+        if not (hasattr(self.cap, "isOpened") and self.cap.isOpened()):
+            print("[warn] Primary camera open failed. Scanning for available cameras...", flush=True)
+            cams = []
+            if hasattr(camera_utils, "list_cameras"):
+                cams = camera_utils.list_cameras()
+            else:
+                cams = _fallback_list_cameras()
+            if cams:
+                fallback_idx = cams[0][0]
+                print(f"[info] Falling back to camera index: {fallback_idx}")
+                # Try open again with fallback index
+                if hasattr(camera_utils, "open_capture"):
+                    self.cap = camera_utils.open_capture(fallback_idx)
+                else:
+                    self.cap = _fallback_open_capture(fallback_idx)
+            else:
+                print("[error] No cameras detected. If you intended to use a URL, pass --url.")
 
         self.alerts = AlertPlayer(warning_sound_path=warning_sound_path, debounce_seconds=3.0)
         self.phone = PhoneDetector(model_path=yolo_model_path)
@@ -70,49 +89,24 @@ class DriverMonitor:
         self.mouth = MouthAnalyzer()
         self.view = ViewStacker(width=400, height=600, y_range=(25, 40))
         # Stats aggregation and optional DB
-        self.stats = StatsAggregator(interval_seconds=stats_interval)
+        session_id = str(uuid.uuid4())
+        self.stats = StatsAggregator(interval_seconds=stats_interval, session_id=session_id)
         self.stats_db = None
-        self.ts_store = None
-        self.session_id = None
-        self.session_tz = session_tz or os.getenv("SESSION_TZ", "UTC")
         if mongo_uri:
             try:
-                if timeseries:
-                    self.ts_store = TimeSeriesStore(mongo_uri, db_name=mongo_db,
-                                                    sessions_coll=sessions_coll, windows_coll=windows_coll)
-                    self.session_id = self.ts_store.start_session(self.session_tz)
-                    print(f"[info] Connected to MongoDB Atlas (time-series). session_id={self.session_id}")
-                else:
-                    self.stats_db = StatsDB(mongo_uri, db_name=mongo_db, coll_name=mongo_coll)
-                    print("[info] Connected to MongoDB Atlas (legacy stats)")
+                self.stats_db = StatsDB(mongo_uri, db_name=mongo_db, coll_name=mongo_coll)
+                print("[info] Connected to MongoDB Atlas")
             except Exception as e:
                 print(f"[warn] Mongo connection failed: {e}. Proceeding without DB.")
 
     def run(self):
-        consecutive_failures = 0
         while True:
             ok, img = self.cap.read()
             if not ok:
                 # For network streams allow retry instead of quitting
-                consecutive_failures += 1
-                if consecutive_failures % 10 == 0:
-                    print(f"[warn] Failed to grab frame x{consecutive_failures}; retrying...", flush=True)
-                # Attempt auto-reopen after a short backoff if too many failures
-                if consecutive_failures >= 50:
-                    print("[info] Re-opening capture due to repeated failures...", flush=True)
-                    try:
-                        # Recreate capture using same init parameters (cam index vs URL)
-                        # If original source was URL, we don't know here; simply try to open default cam again
-                        # because DriverMonitor only keeps cap handle. Use camera_utils list_cameras for hint.
-                        self.cap.release()
-                        # Try to reopen with previous approach
-                        self.cap = camera_utils.open_capture(0)
-                        consecutive_failures = 0
-                    except Exception as e:
-                        print(f"[warn] Re-open failed: {e}")
+                print("[warn] Failed to grab frame; retrying...", flush=True)
                 time.sleep(0.05)
                 continue
-            consecutive_failures = 0
 
             now = time.time()
 
@@ -140,13 +134,9 @@ class DriverMonitor:
                 imgStack = cvzone.stackImages([img, img], 2, 1)
 
             # Flush to DB every interval
-            if self.stats.ready(now):
-                if self.ts_store and self.session_id:
-                    ts_doc = self.stats.flush_timeseries(now)
-                    self.ts_store.insert_window(self.session_id, ts_doc)
-                elif self.stats_db:
-                    doc = self.stats.flush(now)
-                    self.stats_db.insert(doc)
+            if self.stats_db and self.stats.ready(now):
+                doc = self.stats.flush(now)
+                self.stats_db.insert(doc)
 
             cv2.imshow("Driver Monitoring", imgStack)
             if cv2.waitKey(1) & 0xFF == ord("q"):
@@ -154,9 +144,6 @@ class DriverMonitor:
 
         self.cap.release()
         cv2.destroyAllWindows()
-        # Close session if active
-        if self.ts_store and self.session_id:
-            self.ts_store.end_session(self.session_id)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -168,12 +155,6 @@ if __name__ == "__main__":
     parser.add_argument("--mongo-uri", type=str, default=os.getenv("MONGODB_URI"), help="MongoDB Atlas connection string")
     parser.add_argument("--mongo-db", type=str, default=os.getenv("MONGODB_DB", "driver_monitor"))
     parser.add_argument("--mongo-coll", type=str, default=os.getenv("MONGODB_COLL", "stats"))
-    parser.add_argument("--sessions-coll", type=str, default=os.getenv("MONGODB_SESSIONS_COLL", "sessions"))
-    parser.add_argument("--windows-coll", type=str, default=os.getenv("MONGODB_WINDOWS_COLL", "windows_5s"))
-    parser.add_argument("--session-tz", type=str, default=os.getenv("SESSION_TZ", "UTC"))
-    # Enable time-series schema by default; use --no-timeseries to opt out if needed
-    parser.add_argument("--timeseries", action="store_true", default=True, help="Enable time-series schema (sessions/windows_5s)")
-    parser.add_argument("--no-timeseries", action="store_false", dest="timeseries", help="Disable time-series schema (use legacy stats doc)")
     parser.add_argument("--stats-interval", type=float, default=float(os.getenv("STATS_INTERVAL", "5")), help="seconds")
     args = parser.parse_args()
 
@@ -190,10 +171,6 @@ if __name__ == "__main__":
     else:
         print(f"Using camera index: {cam_index}")
 
-    # If timeseries is enabled but no Mongo URI is provided, inform the user (no DB writes will occur)
-    if args.timeseries and not args.mongo_uri:
-        print("[info] Time-series mode is enabled but no MONGODB_URI was provided; stats will not be stored. Set MONGODB_URI in .env or pass --mongo-uri.")
-
     app = DriverMonitor(
         cam_index=cam_index,
         yolo_model_path=args.yolo,
@@ -203,10 +180,6 @@ if __name__ == "__main__":
         mongo_uri=args.mongo_uri,
         mongo_db=args.mongo_db,
         mongo_coll=args.mongo_coll,
-        timeseries=args.timeseries,
-        session_tz=args.session_tz,
-        sessions_coll=args.sessions_coll,
-        windows_coll=args.windows_coll,
     )
     app.run()
 

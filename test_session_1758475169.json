@@ -1,0 +1,196 @@
+{
+  "session": {
+    "session_id": "f48e7161-9b9d-4d93-bffd-5361fba591c9",
+    "session_tz": "America/New_York",
+    "started_at_dt": "2025-09-21T17:19:28.800678Z",
+    "ended_at_dt": "2025-09-21T17:19:29.981640Z"
+  },
+  "windows": [
+    {
+      "session_id": "f48e7161-9b9d-4d93-bffd-5361fba591c9",
+      "window_start_dt": "2025-09-21T17:19:28.800687Z",
+      "window_end_dt": "2025-09-21T17:19:33.834016Z",
+      "window_start_s": 1758475168.800687,
+      "window_end_s": 1758475173.8340156,
+      "duration_sec": 5.033328533172607,
+      "blinks_count": 4,
+      "eyes_closed_over_3s_episodes": 0,
+      "eyes_closed_over_3s_total_sec": 0.0,
+      "head_over_3s": {
+        "left": {
+          "episodes": 0,
+          "total_sec": 0.0
+        },
+        "right": {
+          "episodes": 0,
+          "total_sec": 0.0
+        },
+        "up": {
+          "episodes": 0,
+          "total_sec": 0.0
+        },
+        "down": {
+          "episodes": 0,
+          "total_sec": 0.0
+        }
+      },
+      "phone_episodes": 0,
+      "phone_total_sec": 0.0
+    },
+    {
+      "session_id": "f48e7161-9b9d-4d93-bffd-5361fba591c9",
+      "window_start_dt": "2025-09-21T17:19:33.834016Z",
+      "window_end_dt": "2025-09-21T17:19:38.867344Z",
+      "window_start_s": 1758475173.8340156,
+      "window_end_s": 1758475178.8673441,
+      "duration_sec": 5.033328533172607,
+      "blinks_count": 3,
+      "eyes_closed_over_3s_episodes": 0,
+      "eyes_closed_over_3s_total_sec": 0.0,
+      "head_over_3s": {
+        "left": {
+          "episodes": 1,
+          "total_sec": 4.999995231628418
+        },
+        "right": {
+          "episodes": 0,
+          "total_sec": 0.0
+        },
+        "up": {
+          "episodes": 0,
+          "total_sec": 0.0
+        },
+        "down": {
+          "episodes": 0,
+          "total_sec": 0.0
+        }
+      },
+      "phone_episodes": 0,
+      "phone_total_sec": 0.0
+    },
+    {
+      "session_id": "f48e7161-9b9d-4d93-bffd-5361fba591c9",
+      "window_start_dt": "2025-09-21T17:19:38.867344Z",
+      "window_end_dt": "2025-09-21T17:19:43.900673Z",
+      "window_start_s": 1758475178.8673441,
+      "window_end_s": 1758475183.9006727,
+      "duration_sec": 5.033328533172607,
+      "blinks_count": 4,
+      "eyes_closed_over_3s_episodes": 0,
+      "eyes_closed_over_3s_total_sec": 0.0,
+      "head_over_3s": {
+        "left": {
+          "episodes": 0,
+          "total_sec": 0.0
+        },
+        "right": {
+          "episodes": 0,
+          "total_sec": 0.0
+        },
+        "up": {
+          "episodes": 0,
+          "total_sec": 0.0
+        },
+        "down": {
+          "episodes": 0,
+          "total_sec": 0.0
+        }
+      },
+      "phone_episodes": 1,
+      "phone_total_sec": 0.0666666030883789
+    },
+    {
+      "session_id": "f48e7161-9b9d-4d93-bffd-5361fba591c9",
+      "window_start_dt": "2025-09-21T17:19:43.900673Z",
+      "window_end_dt": "2025-09-21T17:19:48.934001Z",
+      "window_start_s": 1758475183.9006727,
+      "window_end_s": 1758475188.9340012,
+      "duration_sec": 5.033328533172607,
+      "blinks_count": 2,
+      "eyes_closed_over_3s_episodes": 0,
+      "eyes_closed_over_3s_total_sec": 0.0,
+      "head_over_3s": {
+        "left": {
+          "episodes": 0,
+          "total_sec": 0.0
+        },
+        "right": {
+          "episodes": 0,
+          "total_sec": 0.0
+        },
+        "up": {
+          "episodes": 0,
+          "total_sec": 0.0
+        },
+        "down": {
+          "episodes": 0,
+          "total_sec": 0.0
+        }
+      },
+      "phone_episodes": 0,
+      "phone_total_sec": 0.0
+    },
+    {
+      "session_id": "f48e7161-9b9d-4d93-bffd-5361fba591c9",
+      "window_start_dt": "2025-09-21T17:19:48.934001Z",
+      "window_end_dt": "2025-09-21T17:19:53.967330Z",
+      "window_start_s": 1758475188.9340012,
+      "window_end_s": 1758475193.9673297,
+      "duration_sec": 5.033328533172607,
+      "blinks_count": 1,
+      "eyes_closed_over_3s_episodes": 0,
+      "eyes_closed_over_3s_total_sec": 0.0,
+      "head_over_3s": {
+        "left": {
+          "episodes": 0,
+          "total_sec": 0.0
+        },
+        "right": {
+          "episodes": 0,
+          "total_sec": 0.0
+        },
+        "up": {
+          "episodes": 0,
+          "total_sec": 0.0
+        },
+        "down": {
+          "episodes": 0,
+          "total_sec": 0.0
+        }
+      },
+      "phone_episodes": 0,
+      "phone_total_sec": 0.0
+    },
+    {
+      "session_id": "f48e7161-9b9d-4d93-bffd-5361fba591c9",
+      "window_start_dt": "2025-09-21T17:19:53.967330Z",
+      "window_end_dt": "2025-09-21T17:19:58.967330Z",
+      "window_start_s": 1758475193.9673297,
+      "window_end_s": 1758475198.9673297,
+      "duration_sec": 5.0,
+      "blinks_count": 2,
+      "eyes_closed_over_3s_episodes": 0,
+      "eyes_closed_over_3s_total_sec": 0.0,
+      "head_over_3s": {
+        "left": {
+          "episodes": 0,
+          "total_sec": 0.0
+        },
+        "right": {
+          "episodes": 0,
+          "total_sec": 0.0
+        },
+        "up": {
+          "episodes": 0,
+          "total_sec": 0.0
+        },
+        "down": {
+          "episodes": 0,
+          "total_sec": 0.0
+        }
+      },
+      "phone_episodes": 0,
+      "phone_total_sec": 0.0
+    }
+  ]
+}

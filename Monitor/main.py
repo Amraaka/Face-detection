@@ -6,7 +6,6 @@ import os
 from pathlib import Path
 from typing import Optional
 
-# Load environment variables from .env file in Monitor package
 try:
     from dotenv import load_dotenv
     env_path = Path(__file__).parent / '.env'

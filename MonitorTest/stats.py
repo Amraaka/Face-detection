@@ -33,9 +33,28 @@ class StatsAggregator:
     # Blink tracking
     blink_total_at_start: Optional[int] = None
     last_blink_total: int = 0
+    
+    # Time-series window state
+    last_update_ts: float = 0.0
+    # Eyes (episodes that reach 3s within window)
+    eyes_closed_active: bool = False
+    eyes_episode_accum_sec: float = 0.0
+    eyes_episode_crossed: bool = False
+    eyes_closed_over3_episodes_win: int = 0
+    eyes_closed_over3_total_sec_win: float = 0.0
+    
+    # Head per-direction (over threshold 3s episodes)
+    head_dirs: Dict[str, Dict[str, float | bool | int]] = None  # initialized in start()
+    
+    # Phone per-window accumulators
+    phone_active_prev: bool = False
+    phone_active_accum_sec: float = 0.0
+    phone_started_in_window: int = 0
+    phone_ended_in_window: int = 0
 
     def start(self, now: float, blink_total: int = 0) -> None:
         self.window_start = now
+        self.last_update_ts = now
         self.looking_forward_frames = 0
         self.looking_left_frames = 0
         self.looking_right_frames = 0
@@ -51,6 +70,22 @@ class StatsAggregator:
         self.yawning_episodes = 0
         self.blink_total_at_start = blink_total
         self.last_blink_total = blink_total
+        # Time-series window trackers
+        self.eyes_closed_active = False
+        self.eyes_episode_accum_sec = 0.0
+        self.eyes_episode_crossed = False
+        self.eyes_closed_over3_episodes_win = 0
+        self.eyes_closed_over3_total_sec_win = 0.0
+        self.head_dirs = {
+            "left": {"active": False, "accum": 0.0, "crossed": False, "episodes": 0, "total_sec": 0.0},
+            "right": {"active": False, "accum": 0.0, "crossed": False, "episodes": 0, "total_sec": 0.0},
+            "up": {"active": False, "accum": 0.0, "crossed": False, "episodes": 0, "total_sec": 0.0},
+            "down": {"active": False, "accum": 0.0, "crossed": False, "episodes": 0, "total_sec": 0.0},
+        }
+        self.phone_active_prev = False
+        self.phone_active_accum_sec = 0.0
+        self.phone_started_in_window = 0
+        self.phone_ended_in_window = 0
 
     def _categorize_gaze(self, yaw: float, pitch: float) -> str:
         """Categorize gaze direction based on yaw and pitch angles"""
@@ -85,6 +120,10 @@ class StatsAggregator:
         if self.window_start == 0.0:
             self.start(now, blink_total or 0)
 
+        # Delta time since last update for per-window accumulations
+        dt = max(0.0, now - (self.last_update_ts or now))
+        self.last_update_ts = now
+
         self.total_frames += 1
 
         # Track gaze direction
@@ -113,6 +152,28 @@ class StatsAggregator:
                     self.total_drowsy_duration += drowsy_duration
                 self.current_drowsy_start = None
 
+        # Eyes closed state for time-series (>=3s episodes within window)
+        if eyes_closed:
+            # enter active if not
+            if not self.eyes_closed_active:
+                self.eyes_closed_active = True
+                self.eyes_episode_accum_sec = 0.0
+                self.eyes_episode_crossed = False
+            # accumulate
+            self.eyes_episode_accum_sec += dt
+            if (not self.eyes_episode_crossed) and self.eyes_episode_accum_sec >= 3.0:
+                self.eyes_closed_over3_episodes_win += 1
+                self.eyes_episode_crossed = True
+        else:
+            # finalize current episode if any
+            if self.eyes_closed_active:
+                if self.eyes_episode_crossed:
+                    self.eyes_closed_over3_total_sec_win += self.eyes_episode_accum_sec
+                # reset
+                self.eyes_closed_active = False
+                self.eyes_episode_accum_sec = 0.0
+                self.eyes_episode_crossed = False
+
         # Track phone usage episodes
         if phone_detected:
             if self.current_phone_start is None:
@@ -124,6 +185,17 @@ class StatsAggregator:
                 self.total_phone_duration += phone_duration
                 self.current_phone_start = None
 
+        # Phone per-window accumulators
+        if phone_detected and not self.phone_active_prev:
+            # phone started now within this window
+            self.phone_started_in_window += 1
+        if (not phone_detected) and self.phone_active_prev:
+            # phone ended now within this window
+            self.phone_ended_in_window += 1
+        self.phone_active_prev = phone_detected
+        if phone_detected:
+            self.phone_active_accum_sec += dt
+
         # Track yawning (estimated from mouth opening ratio)
         if mouth_open_ratio is not None and mouth_open_ratio > 50:  # Threshold for yawn detection
             self.yawning_episodes += 1
@@ -131,6 +203,41 @@ class StatsAggregator:
         # Track blinks
         if blink_total is not None:
             self.last_blink_total = int(blink_total)
+
+        # Head over-threshold per-direction episode tracking (>=3s)
+        # Determine which directions are currently over threshold
+        over = {"left": False, "right": False, "up": False, "down": False}
+        if yaw is not None and pitch is not None:
+            # Using same thresholds as _categorize_gaze
+            YAW_THRESHOLD = 15
+            PITCH_THRESHOLD = 10
+            if yaw > YAW_THRESHOLD:
+                over["left"] = True
+            if yaw < -YAW_THRESHOLD:
+                over["right"] = True
+            if pitch < -PITCH_THRESHOLD:
+                over["up"] = True
+            if pitch > PITCH_THRESHOLD:
+                over["down"] = True
+
+        for d in ["left", "right", "up", "down"]:
+            state = self.head_dirs[d]
+            if over[d]:
+                if not state["active"]:
+                    state["active"] = True
+                    state["accum"] = 0.0
+                    state["crossed"] = False
+                state["accum"] += dt
+                if (not state["crossed"]) and state["accum"] >= 3.0:
+                    state["episodes"] = int(state["episodes"]) + 1
+                    state["crossed"] = True
+            else:
+                if state["active"]:
+                    if state["crossed"]:
+                        state["total_sec"] = float(state["total_sec"]) + float(state["accum"]) 
+                    state["active"] = False
+                    state["accum"] = 0.0
+                    state["crossed"] = False
 
     def ready(self, now: float) -> bool:
         return self.window_start != 0.0 and (now - self.window_start) >= self.interval_seconds
@@ -192,6 +299,78 @@ class StatsAggregator:
             "distraction_level": self._calculate_distraction_level(gaze_percentages, self.phone_usage_episodes, self.drowsiness_episodes),
         }
         
+        # Reset for next window
+        self.start(now, self.last_blink_total)
+        return doc
+
+    def flush_timeseries(self, now: float) -> dict:
+        """Produce a window document matching the required time-series schema.
+        This method does NOT write to any store. Caller can pass the document to TimeSeriesStore.insert_window().
+        """
+        # Finalize any ongoing per-window episodes up to 'now'
+        dt_tail = max(0.0, now - (self.last_update_ts or now))
+        if dt_tail > 0:
+            # Eyes
+            if self.eyes_closed_active:
+                self.eyes_episode_accum_sec += dt_tail
+            # Phone
+            if self.phone_active_prev:
+                self.phone_active_accum_sec += dt_tail
+            # Head
+            for d in ["left", "right", "up", "down"]:
+                if self.head_dirs[d]["active"]:
+                    self.head_dirs[d]["accum"] += dt_tail
+
+        # If crossing occurred by now, ensure counters updated
+        if self.eyes_closed_active and (not self.eyes_episode_crossed) and self.eyes_episode_accum_sec >= 3.0:
+            self.eyes_closed_over3_episodes_win += 1
+            self.eyes_episode_crossed = True
+        for d in ["left", "right", "up", "down"]:
+            st = self.head_dirs[d]
+            if st["active"] and (not st["crossed"]) and st["accum"] >= 3.0:
+                st["episodes"] = int(st["episodes"]) + 1
+                st["crossed"] = True
+
+        # Complete totals for ongoing active segments
+        if self.eyes_closed_active and self.eyes_episode_crossed:
+            self.eyes_closed_over3_total_sec_win += self.eyes_episode_accum_sec
+        for d in ["left", "right", "up", "down"]:
+            st = self.head_dirs[d]
+            if st["active"] and st["crossed"]:
+                st["total_sec"] = float(st["total_sec"]) + float(st["accum"]) 
+
+        window_start_s = self.window_start
+        window_end_s = now
+        duration = round(max(0.0, window_end_s - window_start_s), 3)
+
+        # Calculate blinks in window
+        blinks_in_window = 0
+        if self.blink_total_at_start is not None:
+            blinks_in_window = max(0, self.last_blink_total - self.blink_total_at_start)
+
+        head_doc = {
+            k: {"episodes": int(self.head_dirs[k]["episodes"]), "total_sec": round(float(self.head_dirs[k]["total_sec"]), 3)}
+            for k in ["left", "right", "up", "down"]
+        }
+
+        doc = {
+            "window_start_s": float(window_start_s),
+            "window_end_s": float(window_end_s),
+            "duration_sec": float(duration),
+
+            # Eye
+            "blinks_count": int(blinks_in_window),
+            "eyes_closed_over_3s_episodes": int(self.eyes_closed_over3_episodes_win),
+            "eyes_closed_over_3s_total_sec": round(float(self.eyes_closed_over3_total_sec_win), 3),
+
+            # Head
+            "head_over_3s": head_doc,
+
+            # Phone
+            "phone_episodes": int(self.phone_started_in_window + self.phone_ended_in_window),
+            "phone_total_sec": round(float(self.phone_active_accum_sec), 3),
+        }
+
         # Reset for next window
         self.start(now, self.last_blink_total)
         return doc

@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
-from typing import Union
+from typing import Union, Optional
+import os
 
 __all__ = ["open_capture", "list_cameras", "MjpegStreamCapture"]  # ensure names are exported
 
@@ -72,6 +73,17 @@ class MjpegStreamCapture:
         except Exception:
             pass
 
+def _try_open_local(index: int, backend: Optional[int] = None):
+    """Try opening local camera with an optional backend, return cap or None."""
+    if backend is not None:
+        cap = cv2.VideoCapture(index, backend)
+    else:
+        cap = cv2.VideoCapture(index)
+    if cap.isOpened():
+        return cap
+    cap.release()
+    return None
+
 def open_capture(source: Union[int, str]):
     """
     source: camera index (int) or network URL (str, e.g. http://IP:8080/video or rtsp://...)
@@ -91,6 +103,23 @@ def open_capture(source: Union[int, str]):
     if not cap.isOpened():
         cap.release()
         cap = cv2.VideoCapture(int(source))  # fallback
+    # Reduce latency if supported
+    try:
+        cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+    except Exception:
+        pass
+    # Optionally set resolution/FPS if provided, but do not enforce
+    try:
+        w = int(os.getenv("CAM_WIDTH", "0"))
+        h = int(os.getenv("CAM_HEIGHT", "0"))
+        fps = float(os.getenv("CAM_FPS", "0"))
+        if w > 0 and h > 0:
+            cap.set(cv2.CAP_PROP_FRAME_WIDTH, w)
+            cap.set(cv2.CAP_PROP_FRAME_HEIGHT, h)
+        if fps > 0:
+            cap.set(cv2.CAP_PROP_FPS, fps)
+    except Exception:
+        pass
     return cap
 
 def list_cameras(max_index: int = 8):

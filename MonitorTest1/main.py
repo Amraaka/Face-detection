@@ -187,4 +187,4 @@ if __name__ == "__main__":
 # .venv/bin/python -m Monitor.main --list-cams
 # .venv/bin/python -m Monitor.main --cam 0
 # .venv/bin/python -m Monitor.main --url http://172.20.10.3:8080/video
-# python3 -m MonitorTest1.main --cam 1  
+# python3 -m MonitorTest1.main --cam 1

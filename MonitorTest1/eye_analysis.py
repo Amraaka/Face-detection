@@ -20,20 +20,16 @@ class EyeAnalyzer:
         return float(np.linalg.norm(p1 - p2))
 
     def analyze(self, img, face, now, on_warning=None):
-        # Left eye landmarks
         leftUp, leftDown = face[159], face[23]
         leftLeft, leftRight = face[130], face[243]
 
-        # Visualize
         cv2.line(img, leftUp, leftDown, (0, 200, 0), 3)
         cv2.line(img, leftLeft, leftRight, (0, 200, 0), 3)
 
-        # Ratio
         lengthVer = self._dist(leftUp, leftDown)
         lengthHor = max(self._dist(leftLeft, leftRight), 1e-5)
         ratio = int((lengthVer / lengthHor) * 100)
 
-        # Smooth ratio
         self.ratioList.append(ratio)
         if len(self.ratioList) > 3:
             self.ratioList.pop(0)
@@ -62,7 +58,6 @@ class EyeAnalyzer:
             self.eye_closed_start_time = None
             self.eye_closed_warning_given = False
 
-        # Reset blink color
         if self.counter != 0:
             self.counter += 1
             if self.counter > 10:

@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 from typing import Optional
 import uuid
-
+   
 try:
     from dotenv import load_dotenv
     env_path = Path(__file__).parent / '.env'

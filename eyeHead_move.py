@@ -7,7 +7,7 @@ import time
 
 # Initialize
 # cap = cv2.VideoCapture('/Users/amara/SideProjects/Research/Eye_Blink_Detection/Blinking_Video.mp4')
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 detector = FaceMeshDetector(maxFaces=1)
 plotY = LivePlot(400, 600, [25, 40])
 
@@ -33,6 +33,23 @@ while True:
 
     if faces:
         face = faces[0]
+
+        # --- Draw eye landmarks with green dots ---
+        # Left eye landmarks
+        for idx in leftEyeIdList:
+            pt = tuple(map(int, face[idx][:2]))
+            cv2.circle(img, pt, 3, (0, 255, 0), -1)  # Green dots
+        
+        # Right eye landmarks
+        for idx in rightEyeIdList:
+            pt = tuple(map(int, face[idx][:2]))
+            cv2.circle(img, pt, 3, (0, 255, 0), -1)  # Green dots
+        
+        # --- Draw mouth landmarks with green dots ---
+        mouth_landmarks = [61, 84, 17, 314, 405, 320, 307, 375, 321, 308, 324, 318, 291, 13, 14]
+        for idx in mouth_landmarks:
+            pt = tuple(map(int, face[idx][:2]))
+            cv2.circle(img, pt, 3, (0, 255, 0), -1)  # Green dots
 
         # --- EAR calculation for left eye ---
         leftUp = face[159]

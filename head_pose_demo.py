@@ -11,17 +11,6 @@ import time
 
 
 class HeadPoseEstimator:
-    """
-    Estimates head pose (orientation) using facial landmarks and PnP (Perspective-n-Point) algorithm
-    This is the EXACT implementation from MonitorTest1
-    
-    The algorithm:
-    1. Uses 6 key facial landmarks as 2D reference points (indices: 1, 152, 263, 33, 287, 57)
-    2. Maps them to a 3D face model
-    3. Uses cv2.solvePnP to find rotation and translation vectors
-    4. Uses cv2.decomposeProjectionMatrix to extract Euler angles (yaw, pitch, roll)
-    """
-    
     def __init__(self, yaw_threshold=20, pitch_threshold=20, hold_seconds=3):
         self.face_detector = FaceMeshDetector(maxFaces=1)
         
@@ -32,7 +21,6 @@ class HeadPoseEstimator:
         self.head_turned = False
         self.turned_start_time = 0.0
         
-        # 3D model points - EXACT values from MonitorTest1
         # Landmarks: [1, 152, 263, 33, 287, 57]
         self.model_points = np.array([
             (0.0, 0.0, 0.0),           # Nose tip (landmark 1)

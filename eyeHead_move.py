@@ -44,9 +44,9 @@ while True:
         for idx in rightEyeIdList:
             pt = tuple(map(int, face[idx][:2]))
             cv2.circle(img, pt, 3, (0, 255, 0), -1)  # Green dots
-        
+    
         # --- Draw mouth landmarks with green dots ---
-        mouth_landmarks = [61, 84, 17, 314, 405, 320, 307, 375, 321, 308, 324, 318, 291, 13, 14]
+        mouth_landmarks = [0, 267, 37, 39, 40 , 185, 17, 181, 84, 91, 146, 314, 405, 321, 375, 269, 270, 409, 76, 308, 82, 13, 81, 80, 14, 87, 178, 88, 402]
         for idx in mouth_landmarks:
             pt = tuple(map(int, face[idx][:2]))
             cv2.circle(img, pt, 3, (0, 255, 0), -1)  # Green dots
@@ -135,7 +135,7 @@ while True:
             head_turned = False
 
         imgPlot = plotY.update(ratioAvg, color)
-        imgStack = cvzone.stackImages([img, imgPlot], 2, 1)
+        imgStack =  cvzone.stackImages([img, imgPlot], 2, 1)
 
     else:
         imgStack = cvzone.stackImages([img, img], 2, 1)

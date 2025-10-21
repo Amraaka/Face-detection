@@ -3,7 +3,7 @@ import cvzone
 import numpy as np
 
 class EyeAnalyzer:
-    def __init__(self, blink_ratio_thresh=31, eye_closed_seconds=2):
+    def __init__(self, blink_ratio_thresh=30, eye_closed_seconds=2):
         self.BLINK_RATIO_THRESH = blink_ratio_thresh
         self.EYE_CLOSED_SECONDS = eye_closed_seconds
         self.ratioList = []

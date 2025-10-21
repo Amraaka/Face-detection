@@ -4,7 +4,7 @@ from cvzone.FaceMeshModule import FaceMeshDetector
 from cvzone.PlotModule import LivePlot
 
 # cap = cv2.VideoCapture('/Users/amara/SideProjects/Research/Eye_Blink_Detection/Blinking_Video.mp4')
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 # cap = cv2.
 detector = FaceMeshDetector(maxFaces=2)
 plotY = LivePlot(400, 600, [25, 40])  
@@ -27,14 +27,14 @@ while True:
 
     if faces:
         face = faces[0]
-        # for id in leftEyeIdList:
-        #     cv2.circle(img, face[id], 5, color, cv2.FILLED)
-        # for id in rightEyeIdList:
-        #     cv2.circle(img, face[id], 5, color, cv2.FILLED)
+        for id in leftEyeIdList:
+            cv2.circle(img, face[id], 5, color, cv2.FILLED)
+        for id in rightEyeIdList:
+            cv2.circle(img, face[id], 5, color, cv2.FILLED)
 
-        # for idx, point in enumerate(face):
-        #     cv2.circle(img, point, 2, (255, 255, 255), -1)
-        #     cv2.putText(img, str(idx), point, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0,255,0), 1)
+        for idx, point in enumerate(face):
+            cv2.circle(img, point, 2, (255, 255, 255), -1)
+            cv2.putText(img, str(idx), point, cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0,255,0), 1)
 
         #left eye EAR points 
         cv2.circle(img, face[130], 5,(0, 0 , 255), cv2.FILLED) # left P1
@@ -44,6 +44,11 @@ while True:
         cv2.circle(img, face[22], 5,(0, 0 , 255), cv2.FILLED) # left P5
         cv2.circle(img, face[24], 5,(0, 0 , 255), cv2.FILLED) # left P6 
 
+        # [0, 267, 37, 39, 40 , 185, 17, 214, 181, 84, 91, 146, 314, 405, 321, 
+        # 375, 269, 270, 409, 76, 308  ]
+
+
+        # 82, 13, 81, 80, 14, 87 178, 88 402
         #right eye EAR points
         cv2.circle(img, face[463], 5,(0, 0 , 255), cv2.FILLED) # left P1
         cv2.circle(img, face[446], 5,(0, 0 , 255), cv2.FILLED) # left P2

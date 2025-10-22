@@ -5,7 +5,6 @@ from cvzone.PlotModule import LivePlot
 import numpy as np
 import time
 
-# Initialize
 # cap = cv2.VideoCapture('/Users/amara/SideProjects/Research/Eye_Blink_Detection/Blinking_Video.mp4')
 cap = cv2.VideoCapture(0)
 detector = FaceMeshDetector(maxFaces=1)

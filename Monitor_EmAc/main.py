@@ -26,6 +26,7 @@ from .stats import StatsAggregator
 from .stats_store import StatsDB
 from .emotion_detection import EmotionDetector
 from .face_view import FaceOnlyView
+from .activity_detection import ActivityDetector
 
 def _fallback_open_capture(source):
     if isinstance(source, str):
@@ -56,7 +57,8 @@ def _fallback_list_cameras(max_index: int = 8):
 class DriverMonitor:
     def __init__(self, cam_index=0, yolo_model_path="yolov8n.pt", warning_sound_path="warning.mp3", url=None,
                  stats_interval: float = 5.0, mongo_uri: Optional[str] = None, mongo_db: str = "driver_monitor",
-                 mongo_coll: str = "stats", face_only_view: bool = True, enable_emotion: bool = True):
+                 mongo_coll: str = "stats", face_only_view: bool = True, enable_emotion: bool = True,
+                 enable_activity: bool = True):
         if hasattr(camera_utils, "open_capture"):
             self.cap = camera_utils.open_capture(url if url else cam_index)
         else:
@@ -92,6 +94,12 @@ class DriverMonitor:
             self.emotion = EmotionDetector()
         else:
             self.emotion = None
+        
+        self.enable_activity = enable_activity
+        if enable_activity:
+            self.activity = ActivityDetector()
+        else:
+            self.activity = None
         
         self.face_only_view = face_only_view
         if face_only_view:
@@ -135,6 +143,8 @@ class DriverMonitor:
             emotion = None
             emotion_confidence = 0
             emotion_box = None
+            activity_label = None
+            activity_confidence = 0.0
             ratioAvg = 0
             color = (0, 255, 0)
             eyes_closed = False
@@ -172,6 +182,40 @@ class DriverMonitor:
                     except Exception as e:
                         print(f"[warn] Emotion detection failed: {e}")
                 
+                # Activity detection (runs on full frame)
+                if self.enable_activity and self.activity:
+                    try:
+                        activity_label, activity_confidence = self.activity.detect_activity(img)
+                        if activity_label:
+                            # Color coding for different activities
+                            if activity_label == "drinking":
+                                activity_color = (0, 165, 255)  # Orange
+                            elif activity_label == "talking_phone":
+                                activity_color = (0, 0, 255)  # Red
+                            elif activity_label == "yawning":
+                                activity_color = (255, 255, 0)  # Cyan
+                            else:  # other_activities
+                                activity_color = (200, 200, 200)  # Gray
+                            
+                            # Display activity detection result on frame with background
+                            display_label = activity_label.replace("_", " ").title()
+                            activity_text = f"Activity: {display_label} ({activity_confidence*100:.1f}%)"
+                            
+                            # Get text size for background
+                            text_size = cv2.getTextSize(activity_text, cv2.FONT_HERSHEY_SIMPLEX, 0.8, 2)[0]
+                            
+                            # Draw semi-transparent background
+                            overlay = img.copy()
+                            cv2.rectangle(overlay, (5, img.shape[0] - 50), 
+                                        (text_size[0] + 20, img.shape[0] - 5), (0, 0, 0), -1)
+                            cv2.addWeighted(overlay, 0.6, img, 0.4, 0, img)
+                            
+                            # Draw text
+                            cv2.putText(img, activity_text, (10, img.shape[0] - 20),
+                                       cv2.FONT_HERSHEY_SIMPLEX, 0.8, activity_color, 2)
+                    except Exception as e:
+                        print(f"[warn] Activity detection failed: {e}")
+                
                 self.stats.update(
                     now,
                     yaw=yaw,
@@ -181,6 +225,8 @@ class DriverMonitor:
                     eyes_closed=eyes_closed,
                     mouth_open_ratio=mouth_ratio,
                     emotion_label=emotion,
+                    activity_label=activity_label,
+                    activity_confidence=activity_confidence,
                 )
                 
                 if self.face_only_view and self.face_view:
@@ -188,7 +234,8 @@ class DriverMonitor:
                     imgStack = self.face_view.create_display(
                         face_img, emotion, emotion_confidence,
                         self.eyes.blinkCounter, eyes_closed, yaw, pitch,
-                        phone_detected, mouth_ratio
+                        phone_detected, mouth_ratio, activity_label,
+                        activity_confidence
                     )
                 else:
                     imgStack = img
@@ -202,13 +249,15 @@ class DriverMonitor:
                     eyes_closed=False,
                     mouth_open_ratio=None,
                     emotion_label=None,
+                    activity_label=None,
+                    activity_confidence=0.0,
                 )
                 
                 if self.face_only_view and self.face_view:
                     face_img = self.face_view.extract_face_region(img)
                     imgStack = self.face_view.create_display(
                         face_img, None, 0, self.eyes.blinkCounter, False,
-                        None, None, phone_detected, None
+                        None, None, phone_detected, None, None, 0.0
                     )
                 else:
                     imgStack = img
@@ -239,6 +288,8 @@ if __name__ == "__main__":
     parser.add_argument("--full-view", action="store_true", help="Force full frame view (overrides --face-only)")
     parser.add_argument("--enable-emotion", action="store_true", default=True, help="Enable emotion detection (default: True)")
     parser.add_argument("--no-emotion", action="store_true", help="Disable emotion detection")
+    parser.add_argument("--enable-activity", action="store_true", default=True, help="Enable activity detection (default: True)")
+    parser.add_argument("--no-activity", action="store_true", help="Disable activity detection")
     args = parser.parse_args()
 
     if args.list_cams:
@@ -257,9 +308,11 @@ if __name__ == "__main__":
     face_only = args.face_only and not args.full_view
     
     enable_emotion = not args.no_emotion  
+    enable_activity = not args.no_activity
     
     print(f"View mode: {'Face-only' if face_only else 'Full frame'}")
     print(f"Emotion detection: {'Enabled' if enable_emotion else 'Disabled'}")
+    print(f"Activity detection: {'Enabled' if enable_activity else 'Disabled'}")
 
     app = DriverMonitor(
         cam_index=cam_index,
@@ -272,6 +325,7 @@ if __name__ == "__main__":
         mongo_coll=args.mongo_coll,
         face_only_view=face_only,
         enable_emotion=enable_emotion,
+        enable_activity=enable_activity,
     )
     app.run()
 
@@ -279,4 +333,4 @@ if __name__ == "__main__":
 # .venv/bin/python -m Monitor.main --list-cams
 # .venv/bin/python -m Monitor.main --cam 0
 # .venv/bin/python -m Monitor.main --url http://172.20.10.3:8080/video
-# python3 -m Monitor_emotionAdded.main --cam 1
+# python3 -m Monitor_EmAc.main --cam 1 

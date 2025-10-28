@@ -18,7 +18,7 @@ model = AutoModelForImageClassification.from_pretrained(model_name)
 device = "cpu"
 model.to(device)
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 
 prev_time = time.time()
 

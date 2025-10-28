@@ -36,6 +36,11 @@ class StatsAggregator:
     
     # Emotion tallies within the current window
     emotion_counts: Optional[Dict[str, int]] = None
+    
+    # Activity tallies within the current window
+    activity_counts: Optional[Dict[str, int]] = None
+    activity_last_label: Optional[str] = None
+    activity_confidences: Optional[List[float]] = None
 
     def start(self, now: float, blink_total: int = 0) -> None:
         self.window_start = now
@@ -59,6 +64,10 @@ class StatsAggregator:
         self.last_blink_total = blink_total
         # reset emotion counts each window
         self.emotion_counts = {"Angry": 0, "Happy": 0, "Neutral": 0}
+        # reset activity counts each window
+        self.activity_counts = {"drinking": 0, "other_activities": 0, "talking_phone": 0, "yawning": 0}
+        self.activity_last_label = None
+        self.activity_confidences = []
 
     def _categorize_gaze(self, yaw: float, pitch: float) -> str:
         YAW_THRESHOLD = 20
@@ -88,6 +97,8 @@ class StatsAggregator:
         eyes_closed: bool = False,
         mouth_open_ratio: Optional[float] = None,
         emotion_label: Optional[str] = None,
+        activity_label: Optional[str] = None,
+        activity_confidence: Optional[float] = None,
     ) -> None:
         if self.window_start == 0.0:
             self.start(now, blink_total or 0)
@@ -98,6 +109,16 @@ class StatsAggregator:
         if emotion_label and self.emotion_counts is not None:
             if emotion_label in self.emotion_counts:
                 self.emotion_counts[emotion_label] += 1
+        
+        # Tally activities if provided and recognized
+        if activity_label and self.activity_counts is not None:
+            if activity_label in self.activity_counts:
+                self.activity_counts[activity_label] += 1
+            self.activity_last_label = activity_label
+        
+        # Store activity confidence for averaging
+        if activity_confidence is not None and self.activity_confidences is not None:
+            self.activity_confidences.append(activity_confidence)
 
         if yaw is not None and pitch is not None:
             gaze_direction = self._categorize_gaze(yaw, pitch)
@@ -186,6 +207,21 @@ class StatsAggregator:
         if self.blink_total_at_start is not None:
             blinks_in_window = max(0, self.last_blink_total - self.blink_total_at_start)
 
+        # Calculate average activity confidence and find top activity
+        activity_top_label = None
+        activity_top_conf_avg = None
+        if self.activity_counts and any(count > 0 for count in self.activity_counts.values()):
+            # Find the most frequent activity
+            max_count = max(self.activity_counts.values())
+            for label, count in self.activity_counts.items():
+                if count == max_count:
+                    activity_top_label = label
+                    break
+            
+            # Calculate average confidence
+            if self.activity_confidences:
+                activity_top_conf_avg = round(sum(self.activity_confidences) / len(self.activity_confidences), 4)
+
         window_start_s = float(self.window_start)
         window_end_s = float(now)
         doc = {
@@ -210,6 +246,12 @@ class StatsAggregator:
             "phone_episodes": self.phone_usage_episodes,
             "phone_total_sec": round(self.total_phone_duration, 2),
             "emotion_counts": dict(self.emotion_counts or {}),
+            
+            # Activity data
+            "activity_counts": dict(self.activity_counts or {}),
+            "activity_top_label": activity_top_label,
+            "activity_top_conf_avg": activity_top_conf_avg,
+            "activity_last": self.activity_last_label,
         }
         
         self.start(now, self.last_blink_total)

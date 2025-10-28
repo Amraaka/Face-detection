@@ -27,7 +27,8 @@ class FaceOnlyView:
     
     def create_info_panel(self, height, width, emotion=None, confidence=0, 
                          blink_count=0, eyes_closed=False, yaw=None, pitch=None,
-                         phone_detected=False, mouth_ratio=None):
+                         phone_detected=False, mouth_ratio=None, activity_label=None,
+                         activity_confidence=0.0):
         panel = np.zeros((height, width, 3), dtype=np.uint8)
         
         y_offset = 30
@@ -96,11 +97,43 @@ class FaceOnlyView:
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
             y_offset += line_height
         
+        # Activity detection display
+        if activity_label:
+            # Color coding for different activities
+            if activity_label == "drinking":
+                activity_color = (0, 165, 255)  # Orange
+                bg_color = (0, 80, 120)
+            elif activity_label == "talking_phone":
+                activity_color = (0, 0, 255)  # Red
+                bg_color = (0, 0, 100)
+            elif activity_label == "yawning":
+                activity_color = (255, 255, 0)  # Cyan
+                bg_color = (100, 100, 0)
+            else:  # other_activities
+                activity_color = (200, 200, 200)  # Gray
+                bg_color = (50, 50, 50)
+            
+            # Draw background box
+            cv2.rectangle(panel, (5, y_offset - 25), (width - 5, y_offset + 45), bg_color, -1)
+            cv2.rectangle(panel, (5, y_offset - 25), (width - 5, y_offset + 45), activity_color, 2)
+            
+            # Activity label
+            display_label = activity_label.replace("_", " ").title()
+            cv2.putText(panel, display_label, (15, y_offset + 5),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, activity_color, 2)
+            y_offset += line_height
+            
+            # Confidence
+            cv2.putText(panel, f"{activity_confidence*100:.1f}%", (15, y_offset + 5),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+            y_offset += line_height + 10
+        
         return panel
     
     def create_display(self, face_img, emotion=None, confidence=0, 
                       blink_count=0, eyes_closed=False, yaw=None, pitch=None,
-                      phone_detected=False, mouth_ratio=None):
+                      phone_detected=False, mouth_ratio=None, activity_label=None,
+                      activity_confidence=0.0):
 
         face_display = face_img.copy()
         
@@ -142,7 +175,8 @@ class FaceOnlyView:
         info_panel = self.create_info_panel(
             self.face_height, info_width,
             emotion, confidence, blink_count, eyes_closed,
-            yaw, pitch, phone_detected, mouth_ratio
+            yaw, pitch, phone_detected, mouth_ratio, activity_label,
+            activity_confidence
         )
         
         # Stack face and info panel horizontally

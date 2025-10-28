@@ -1,0 +1,29 @@
+# Updated requirements with resolved version conflicts
+# For emotionCNN.py and MonitorTest1
+
+# Core ML frameworks - carefully version controlled to avoid conflicts
+tensorflow==2.18.0
+# mediapipe has built-in dependencies, avoid explicit jax to prevent conflicts
+mediapipe==0.10.14
+
+# Computer Vision
+opencv-python==4.10.0.84
+cvzone==1.6.1
+
+# Object Detection
+ultralytics==8.3.0
+
+# Database & Utilities
+pymongo==4.10.1
+python-dotenv==1.0.1
+requests==2.32.3
+
+# Audio for alerts
+pygame==2.6.1
+
+# For emotionCNN.py - HuggingFace model loading
+huggingface-hub==0.26.2
+
+# Additional dependencies that may be needed
+numpy<2.0.0  # Ensure compatibility with tensorflow and mediapipe
+protobuf>=3.20.0,<5.0.0  # Required by tensorflow and mediapipe

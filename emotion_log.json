@@ -1,0 +1,519 @@
+{
+  "summary": {
+    "Angry": 10,
+    "Happy": 14,
+    "Neutral": 78
+  },
+  "events": [
+    {
+      "ts": "2025-10-26T04:14:10Z",
+      "emotion": "Neutral",
+      "confidence": 96.8
+    },
+    {
+      "ts": "2025-10-26T04:14:10Z",
+      "emotion": "Neutral",
+      "confidence": 88.5
+    },
+    {
+      "ts": "2025-10-26T04:14:10Z",
+      "emotion": "Neutral",
+      "confidence": 99.6
+    },
+    {
+      "ts": "2025-10-26T04:14:10Z",
+      "emotion": "Neutral",
+      "confidence": 93.6
+    },
+    {
+      "ts": "2025-10-26T04:14:10Z",
+      "emotion": "Neutral",
+      "confidence": 99.7
+    },
+    {
+      "ts": "2025-10-26T04:14:10Z",
+      "emotion": "Angry",
+      "confidence": 81.3
+    },
+    {
+      "ts": "2025-10-26T04:14:11Z",
+      "emotion": "Neutral",
+      "confidence": 99.9
+    },
+    {
+      "ts": "2025-10-26T04:14:11Z",
+      "emotion": "Neutral",
+      "confidence": 93.4
+    },
+    {
+      "ts": "2025-10-26T04:14:11Z",
+      "emotion": "Neutral",
+      "confidence": 95.8
+    },
+    {
+      "ts": "2025-10-26T04:14:11Z",
+      "emotion": "Happy",
+      "confidence": 77.6
+    },
+    {
+      "ts": "2025-10-26T04:14:11Z",
+      "emotion": "Happy",
+      "confidence": 99.0
+    },
+    {
+      "ts": "2025-10-26T04:14:11Z",
+      "emotion": "Happy",
+      "confidence": 93.4
+    },
+    {
+      "ts": "2025-10-26T04:14:11Z",
+      "emotion": "Happy",
+      "confidence": 82.7
+    },
+    {
+      "ts": "2025-10-26T04:14:11Z",
+      "emotion": "Happy",
+      "confidence": 98.1
+    },
+    {
+      "ts": "2025-10-26T04:14:12Z",
+      "emotion": "Happy",
+      "confidence": 74.0
+    },
+    {
+      "ts": "2025-10-26T04:14:12Z",
+      "emotion": "Neutral",
+      "confidence": 97.6
+    },
+    {
+      "ts": "2025-10-26T04:14:12Z",
+      "emotion": "Neutral",
+      "confidence": 99.7
+    },
+    {
+      "ts": "2025-10-26T04:14:12Z",
+      "emotion": "Neutral",
+      "confidence": 70.3
+    },
+    {
+      "ts": "2025-10-26T04:14:12Z",
+      "emotion": "Neutral",
+      "confidence": 99.9
+    },
+    {
+      "ts": "2025-10-26T04:14:12Z",
+      "emotion": "Neutral",
+      "confidence": 93.6
+    },
+    {
+      "ts": "2025-10-26T04:14:12Z",
+      "emotion": "Neutral",
+      "confidence": 99.6
+    },
+    {
+      "ts": "2025-10-26T04:14:12Z",
+      "emotion": "Neutral",
+      "confidence": 99.9
+    },
+    {
+      "ts": "2025-10-26T04:14:12Z",
+      "emotion": "Neutral",
+      "confidence": 99.8
+    },
+    {
+      "ts": "2025-10-26T04:14:13Z",
+      "emotion": "Neutral",
+      "confidence": 87.6
+    },
+    {
+      "ts": "2025-10-26T04:14:13Z",
+      "emotion": "Neutral",
+      "confidence": 99.7
+    },
+    {
+      "ts": "2025-10-26T04:14:13Z",
+      "emotion": "Neutral",
+      "confidence": 99.8
+    },
+    {
+      "ts": "2025-10-26T04:14:13Z",
+      "emotion": "Angry",
+      "confidence": 92.0
+    },
+    {
+      "ts": "2025-10-26T04:14:13Z",
+      "emotion": "Neutral",
+      "confidence": 99.1
+    },
+    {
+      "ts": "2025-10-26T04:14:13Z",
+      "emotion": "Neutral",
+      "confidence": 90.8
+    },
+    {
+      "ts": "2025-10-26T04:14:13Z",
+      "emotion": "Neutral",
+      "confidence": 99.8
+    },
+    {
+      "ts": "2025-10-26T04:14:13Z",
+      "emotion": "Neutral",
+      "confidence": 99.7
+    },
+    {
+      "ts": "2025-10-26T04:14:14Z",
+      "emotion": "Neutral",
+      "confidence": 99.9
+    },
+    {
+      "ts": "2025-10-26T04:14:14Z",
+      "emotion": "Neutral",
+      "confidence": 99.8
+    },
+    {
+      "ts": "2025-10-26T04:14:14Z",
+      "emotion": "Neutral",
+      "confidence": 98.2
+    },
+    {
+      "ts": "2025-10-26T04:14:14Z",
+      "emotion": "Neutral",
+      "confidence": 98.7
+    },
+    {
+      "ts": "2025-10-26T04:14:14Z",
+      "emotion": "Neutral",
+      "confidence": 99.6
+    },
+    {
+      "ts": "2025-10-26T04:14:14Z",
+      "emotion": "Neutral",
+      "confidence": 97.0
+    },
+    {
+      "ts": "2025-10-26T04:14:14Z",
+      "emotion": "Neutral",
+      "confidence": 99.2
+    },
+    {
+      "ts": "2025-10-26T04:14:14Z",
+      "emotion": "Neutral",
+      "confidence": 98.9
+    },
+    {
+      "ts": "2025-10-26T04:14:14Z",
+      "emotion": "Neutral",
+      "confidence": 95.0
+    },
+    {
+      "ts": "2025-10-26T04:14:15Z",
+      "emotion": "Neutral",
+      "confidence": 99.9
+    },
+    {
+      "ts": "2025-10-26T04:14:15Z",
+      "emotion": "Neutral",
+      "confidence": 99.9
+    },
+    {
+      "ts": "2025-10-26T04:14:15Z",
+      "emotion": "Neutral",
+      "confidence": 99.9
+    },
+    {
+      "ts": "2025-10-26T04:14:15Z",
+      "emotion": "Neutral",
+      "confidence": 95.4
+    },
+    {
+      "ts": "2025-10-26T04:14:15Z",
+      "emotion": "Neutral",
+      "confidence": 99.9
+    },
+    {
+      "ts": "2025-10-26T04:14:15Z",
+      "emotion": "Neutral",
+      "confidence": 99.6
+    },
+    {
+      "ts": "2025-10-26T04:14:15Z",
+      "emotion": "Neutral",
+      "confidence": 96.1
+    },
+    {
+      "ts": "2025-10-26T04:14:15Z",
+      "emotion": "Neutral",
+      "confidence": 99.5
+    },
+    {
+      "ts": "2025-10-26T04:14:16Z",
+      "emotion": "Neutral",
+      "confidence": 92.1
+    },
+    {
+      "ts": "2025-10-26T04:14:16Z",
+      "emotion": "Neutral",
+      "confidence": 98.4
+    },
+    {
+      "ts": "2025-10-26T04:14:16Z",
+      "emotion": "Neutral",
+      "confidence": 97.1
+    },
+    {
+      "ts": "2025-10-26T04:14:16Z",
+      "emotion": "Neutral",
+      "confidence": 97.9
+    },
+    {
+      "ts": "2025-10-26T04:14:16Z",
+      "emotion": "Neutral",
+      "confidence": 96.1
+    },
+    {
+      "ts": "2025-10-26T04:14:16Z",
+      "emotion": "Neutral",
+      "confidence": 99.6
+    },
+    {
+      "ts": "2025-10-26T04:14:16Z",
+      "emotion": "Neutral",
+      "confidence": 99.0
+    },
+    {
+      "ts": "2025-10-26T04:14:16Z",
+      "emotion": "Neutral",
+      "confidence": 98.6
+    },
+    {
+      "ts": "2025-10-26T04:14:16Z",
+      "emotion": "Neutral",
+      "confidence": 99.7
+    },
+    {
+      "ts": "2025-10-26T04:14:17Z",
+      "emotion": "Neutral",
+      "confidence": 63.2
+    },
+    {
+      "ts": "2025-10-26T04:14:17Z",
+      "emotion": "Neutral",
+      "confidence": 93.9
+    },
+    {
+      "ts": "2025-10-26T04:14:17Z",
+      "emotion": "Neutral",
+      "confidence": 98.4
+    },
+    {
+      "ts": "2025-10-26T04:14:17Z",
+      "emotion": "Neutral",
+      "confidence": 95.3
+    },
+    {
+      "ts": "2025-10-26T04:14:17Z",
+      "emotion": "Neutral",
+      "confidence": 75.0
+    },
+    {
+      "ts": "2025-10-26T04:14:17Z",
+      "emotion": "Neutral",
+      "confidence": 95.6
+    },
+    {
+      "ts": "2025-10-26T04:14:17Z",
+      "emotion": "Neutral",
+      "confidence": 56.2
+    },
+    {
+      "ts": "2025-10-26T04:14:17Z",
+      "emotion": "Happy",
+      "confidence": 57.0
+    },
+    {
+      "ts": "2025-10-26T04:14:17Z",
+      "emotion": "Happy",
+      "confidence": 94.5
+    },
+    {
+      "ts": "2025-10-26T04:14:18Z",
+      "emotion": "Happy",
+      "confidence": 97.3
+    },
+    {
+      "ts": "2025-10-26T04:14:18Z",
+      "emotion": "Happy",
+      "confidence": 90.8
+    },
+    {
+      "ts": "2025-10-26T04:14:18Z",
+      "emotion": "Happy",
+      "confidence": 63.2
+    },
+    {
+      "ts": "2025-10-26T04:14:18Z",
+      "emotion": "Happy",
+      "confidence": 97.0
+    },
+    {
+      "ts": "2025-10-26T04:14:18Z",
+      "emotion": "Happy",
+      "confidence": 78.1
+    },
+    {
+      "ts": "2025-10-26T04:14:18Z",
+      "emotion": "Neutral",
+      "confidence": 59.3
+    },
+    {
+      "ts": "2025-10-26T04:14:18Z",
+      "emotion": "Neutral",
+      "confidence": 38.1
+    },
+    {
+      "ts": "2025-10-26T04:14:18Z",
+      "emotion": "Happy",
+      "confidence": 62.9
+    },
+    {
+      "ts": "2025-10-26T04:14:19Z",
+      "emotion": "Neutral",
+      "confidence": 77.2
+    },
+    {
+      "ts": "2025-10-26T04:14:19Z",
+      "emotion": "Neutral",
+      "confidence": 87.4
+    },
+    {
+      "ts": "2025-10-26T04:14:19Z",
+      "emotion": "Neutral",
+      "confidence": 93.3
+    },
+    {
+      "ts": "2025-10-26T04:14:19Z",
+      "emotion": "Angry",
+      "confidence": 78.0
+    },
+    {
+      "ts": "2025-10-26T04:14:19Z",
+      "emotion": "Angry",
+      "confidence": 99.2
+    },
+    {
+      "ts": "2025-10-26T04:14:19Z",
+      "emotion": "Angry",
+      "confidence": 99.7
+    },
+    {
+      "ts": "2025-10-26T04:14:19Z",
+      "emotion": "Angry",
+      "confidence": 99.8
+    },
+    {
+      "ts": "2025-10-26T04:14:19Z",
+      "emotion": "Angry",
+      "confidence": 99.7
+    },
+    {
+      "ts": "2025-10-26T04:14:20Z",
+      "emotion": "Angry",
+      "confidence": 99.8
+    },
+    {
+      "ts": "2025-10-26T04:14:20Z",
+      "emotion": "Angry",
+      "confidence": 99.9
+    },
+    {
+      "ts": "2025-10-26T04:14:20Z",
+      "emotion": "Angry",
+      "confidence": 99.9
+    },
+    {
+      "ts": "2025-10-26T04:14:20Z",
+      "emotion": "Neutral",
+      "confidence": 86.1
+    },
+    {
+      "ts": "2025-10-26T04:14:20Z",
+      "emotion": "Neutral",
+      "confidence": 95.4
+    },
+    {
+      "ts": "2025-10-26T04:14:20Z",
+      "emotion": "Neutral",
+      "confidence": 85.8
+    },
+    {
+      "ts": "2025-10-26T04:14:20Z",
+      "emotion": "Neutral",
+      "confidence": 97.0
+    },
+    {
+      "ts": "2025-10-26T04:14:20Z",
+      "emotion": "Neutral",
+      "confidence": 96.9
+    },
+    {
+      "ts": "2025-10-26T04:14:21Z",
+      "emotion": "Neutral",
+      "confidence": 99.9
+    },
+    {
+      "ts": "2025-10-26T04:14:21Z",
+      "emotion": "Neutral",
+      "confidence": 98.5
+    },
+    {
+      "ts": "2025-10-26T04:14:21Z",
+      "emotion": "Neutral",
+      "confidence": 99.5
+    },
+    {
+      "ts": "2025-10-26T04:14:21Z",
+      "emotion": "Neutral",
+      "confidence": 98.9
+    },
+    {
+      "ts": "2025-10-26T04:14:21Z",
+      "emotion": "Neutral",
+      "confidence": 95.8
+    },
+    {
+      "ts": "2025-10-26T04:14:21Z",
+      "emotion": "Neutral",
+      "confidence": 91.9
+    },
+    {
+      "ts": "2025-10-26T04:14:21Z",
+      "emotion": "Neutral",
+      "confidence": 97.6
+    },
+    {
+      "ts": "2025-10-26T04:14:21Z",
+      "emotion": "Neutral",
+      "confidence": 99.8
+    },
+    {
+      "ts": "2025-10-26T04:14:21Z",
+      "emotion": "Neutral",
+      "confidence": 99.9
+    },
+    {
+      "ts": "2025-10-26T04:14:22Z",
+      "emotion": "Neutral",
+      "confidence": 100.0
+    },
+    {
+      "ts": "2025-10-26T04:14:22Z",
+      "emotion": "Neutral",
+      "confidence": 100.0
+    },
+    {
+      "ts": "2025-10-26T04:14:22Z",
+      "emotion": "Neutral",
+      "confidence": 99.9
+    }
+  ]
+}

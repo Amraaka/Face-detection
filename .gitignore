@@ -1,3 +1,5 @@
 Blinking_Video.mp4
 venv
+.venv
 yolov8n.pt
+face_detection_env

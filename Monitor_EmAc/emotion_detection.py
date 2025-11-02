@@ -7,7 +7,10 @@ import os
 
 class EmotionDetector:
     def __init__(self, model_repo="Ganaa614/emotion-cnn-model3_feats_balanced"):
+    # def __init__(self, model_repo="Ganaa614/emotion-cnn-model_binary"):
+
         self.emotion_labels = ['Angry', 'Happy', 'Neutral']
+        # self.emotion_labels = ['non_stressed', 'stressed']
         self.model = None
         self.face_cascade = cv2.CascadeClassifier(
             cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'

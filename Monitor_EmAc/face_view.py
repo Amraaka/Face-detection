@@ -39,24 +39,26 @@ class FaceOnlyView:
         y_offset += line_height + 10
         
         if emotion:
-            if emotion == 'Happy':
+            # Map emotions to stress categories (flipped per request)
+            if emotion == 'Angry':
+                display_emotion = 'Not_Stressed'
                 color = (0, 255, 0)      # Green
                 bg_color = (0, 100, 0)   # Dark green background
-            elif emotion == 'Neutral':
-                color = (0, 255, 255)    # Yellow
-                bg_color = (0, 100, 100) # Dark yellow background
-            elif emotion == 'Angry':
+            else:  # Happy or Neutral
+                display_emotion = 'Stressed'
                 color = (0, 0, 255)      # Red
                 bg_color = (0, 0, 100)   # Dark red background
-            else:
-                color = (255, 255, 255)  # White
-                bg_color = (50, 50, 50)  # Gray background
             
             cv2.rectangle(panel, (5, y_offset - 25), (width - 5, y_offset + 45), bg_color, -1)
             cv2.rectangle(panel, (5, y_offset - 25), (width - 5, y_offset + 45), color, 2)
             
-            cv2.putText(panel, f"{emotion}", (15, y_offset + 5),
+            cv2.putText(panel, f"{display_emotion}", (15, y_offset + 5),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 3)
+            y_offset += line_height
+            
+            # Show original emotion in smaller text
+            cv2.putText(panel, f"({emotion})", (15, y_offset + 5),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
             y_offset += line_height
             
             cv2.putText(panel, f"{confidence:.1f}%", (15, y_offset + 5),
@@ -138,28 +140,26 @@ class FaceOnlyView:
         face_display = face_img.copy()
         
         if emotion:
-            if emotion == 'Happy':
-                emoji = "😊"
-                color = (0, 255, 0)     
-                bg_color = (0, 150, 0)   
-            elif emotion == 'Neutral':
-                emoji = "😐"
-                color = (0, 255, 255)  
-                bg_color = (0, 150, 150) 
-            elif emotion == 'Angry':
+            # Map emotions to stress categories (flipped per request)
+            if emotion == 'Angry':
+                display_text = "Stressed"
                 emoji = "😠"
-                color = (0, 0, 255)  
-                bg_color = (0, 0, 150) 
-            else:
-                emoji = ""
-                color = (255, 255, 255)
-                bg_color = (100, 100, 100)
+                color = (0, 255, 0)      # Green
+                bg_color = (0, 150, 0)   # Dark green
+            else:  # Happy or Neutral
+                display_text = "Not_Stressed"
+                if emotion == 'Happy':
+                    emoji = "😊"
+                else:  # Neutral
+                    emoji = "😐"
+                color = (0, 0, 255)      # Red
+                bg_color = (0, 0, 150)   # Dark red
             
             overlay = face_display.copy()
             cv2.rectangle(overlay, (0, 0), (self.face_width, 80), bg_color, -1)
             cv2.addWeighted(overlay, 0.7, face_display, 0.3, 0, face_display)
             
-            text = f"{emotion} {emoji}"
+            text = f"{display_text} {emoji}"
             text_size = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 1.2, 3)[0]
             text_x = (self.face_width - text_size[0]) // 2
             cv2.putText(face_display, text, (text_x, 50),

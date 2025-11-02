@@ -5,22 +5,24 @@ from tensorflow.keras.layers import Input, TFSMLayer
 from huggingface_hub import snapshot_download
 import os
 
-# === 1. Download your model from Hugging Face Hub ===
+
+    # def __init__(self, model_repo="Ganaa614/emotion-cnn-model_binary"):
+
+    #     # self.emotion_labels = ['Angry', 'Happy', 'Neutral']
+    #     self.emotion_labels = ['non_stressed', 'stressed']
+
 repo_id = "Ganaa614/emotion-cnn-model3_feats_balanced"
 model_dir = snapshot_download(repo_id=repo_id)
 print(f"Model downloaded to: {model_dir}")
 
-# === FIX 1: Load the model using TFSMLayer for Keras 3 ===
 input_tensor = Input(shape=(48, 48, 1))
 layer = TFSMLayer(model_dir, call_endpoint='serving_default')
 output_tensor = layer(input_tensor)
 model = Model(inputs=input_tensor, outputs=output_tensor)
 print("✅ Model loaded successfully using TFSMLayer!")
 
-# === 2. Define emotion labels (assuming 7 classes) ===
 emotion_labels = ['Angry', 'Happy', 'Neutral']
 
-# === 3. Load face detector ===
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
 # === 4. Open webcam ===

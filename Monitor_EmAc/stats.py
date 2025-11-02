@@ -37,10 +37,11 @@ class StatsAggregator:
     # Emotion tallies within the current window
     emotion_counts: Optional[Dict[str, int]] = None
     
-    # Activity tallies within the current window
-    activity_counts: Optional[Dict[str, int]] = None
+    # Activity detection within the current window (boolean flags)
+    activity_detected: Optional[Dict[str, bool]] = None
     activity_last_label: Optional[str] = None
     activity_confidences: Optional[List[float]] = None
+    activity_last_detected_time: Optional[Dict[str, float]] = None  # Track when each activity was last detected
 
     def start(self, now: float, blink_total: int = 0) -> None:
         self.window_start = now
@@ -64,10 +65,11 @@ class StatsAggregator:
         self.last_blink_total = blink_total
         # reset emotion counts each window
         self.emotion_counts = {"Angry": 0, "Happy": 0, "Neutral": 0}
-        # reset activity counts each window
-        self.activity_counts = {"drinking": 0, "other_activities": 0, "talking_phone": 0, "yawning": 0}
+        # reset activity detection flags each window (boolean: detected or not)
+        self.activity_detected = {"drinking": False, "other_activities": False, "talking_phone": False, "yawning": False}
         self.activity_last_label = None
         self.activity_confidences = []
+        self.activity_last_detected_time = {"drinking": 0.0, "other_activities": 0.0, "talking_phone": 0.0, "yawning": 0.0}
 
     def _categorize_gaze(self, yaw: float, pitch: float) -> str:
         YAW_THRESHOLD = 20
@@ -110,15 +112,21 @@ class StatsAggregator:
             if emotion_label in self.emotion_counts:
                 self.emotion_counts[emotion_label] += 1
         
-        # Tally activities if provided and recognized
-        if activity_label and self.activity_counts is not None:
-            if activity_label in self.activity_counts:
-                self.activity_counts[activity_label] += 1
-            self.activity_last_label = activity_label
+        # Mark activity as detected if provided and recognized
+        # Only mark it once to prevent counting every frame
+        if activity_label and self.activity_detected is not None:
+            if activity_label in self.activity_detected:
+                # Only update if not already detected in this window OR if it's been more than 1 second
+                time_since_last = now - self.activity_last_detected_time.get(activity_label, 0.0)
+                if not self.activity_detected[activity_label] or time_since_last >= 1.0:
+                    self.activity_detected[activity_label] = True
+                    self.activity_last_detected_time[activity_label] = now
+                    self.activity_last_label = activity_label
         
-        # Store activity confidence for averaging
-        if activity_confidence is not None and self.activity_confidences is not None:
-            self.activity_confidences.append(activity_confidence)
+        # Store activity confidence for averaging (only when detected)
+        if activity_confidence is not None and activity_label and self.activity_confidences is not None:
+            if activity_label in self.activity_detected and self.activity_detected.get(activity_label, False):
+                self.activity_confidences.append(activity_confidence)
 
         if yaw is not None and pitch is not None:
             gaze_direction = self._categorize_gaze(yaw, pitch)
@@ -210,17 +218,14 @@ class StatsAggregator:
         # Calculate average activity confidence and find top activity
         activity_top_label = None
         activity_top_conf_avg = None
-        if self.activity_counts and any(count > 0 for count in self.activity_counts.values()):
-            # Find the most frequent activity
-            max_count = max(self.activity_counts.values())
-            for label, count in self.activity_counts.items():
-                if count == max_count:
-                    activity_top_label = label
-                    break
+        if self.activity_detected and any(detected for detected in self.activity_detected.values()):
+            # Find the most recently detected activity
+            if self.activity_last_label:
+                activity_top_label = self.activity_last_label
             
             # Calculate average confidence
             if self.activity_confidences:
-                activity_top_conf_avg = round(sum(self.activity_confidences) / len(self.activity_confidences), 4)
+                activity_top_conf_avg = round(sum(self.activity_confidences) / len(self.activity_confidences), 5)
 
         window_start_s = float(self.window_start)
         window_end_s = float(now)
@@ -247,8 +252,8 @@ class StatsAggregator:
             "phone_total_sec": round(self.total_phone_duration, 2),
             "emotion_counts": dict(self.emotion_counts or {}),
             
-            # Activity data
-            "activity_counts": dict(self.activity_counts or {}),
+            # Activity data (boolean flags indicating if activity was detected)
+            "activity_detected": dict(self.activity_detected or {}),
             "activity_top_label": activity_top_label,
             "activity_top_conf_avg": activity_top_conf_avg,
             "activity_last": self.activity_last_label,
